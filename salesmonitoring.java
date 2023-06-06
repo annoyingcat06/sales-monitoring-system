@@ -12,7 +12,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import javax.swing.table.DefaultTableModel;
 import java.text.SimpleDateFormat;
-import static java.util.Calendar.DATE;
 import java.util.Vector;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.swing.JFileChooser;
@@ -26,7 +25,7 @@ import javax.swing.SwingWorker;
 public class Homepage extends javax.swing.JFrame {
 private static final String username = "root";
 private static final String password = "Jayjay@06";
-private static final String dataConn = "jdbc:mysql://localhost:3306/salesmonitoringsystem?zeroDateTimeBehavior=CONVERT_TO_NULL";
+private static final String dataConn = "jdbc:sqlite:resources/monitoringsystem.sql";
  private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
      private ScheduledExecutorService executor;
     private SwingWorker<Void, Vector> worker;
@@ -68,7 +67,7 @@ int q, i, id;
          try
         {
            
-           Class.forName("com.mysql.cj.jdbc.Driver"); 
+Class.forName("org.sqlite.JDBC");
             sqlConn = DriverManager.getConnection(dataConn,username,password);
             pst = sqlConn.prepareStatement("select * from sales");
             
@@ -158,7 +157,7 @@ int q, i, id;
                 {null, null, null, null, null, null}
             },
             new String [] {
-                "ID Number", "DATE", "PRODUCT", "PRICE", "QUANTITY", "TOTAL"
+                "ID", "DATE", "PRODUCT", "PRICE", "QUANTITY", "TOTAL"
             }
         ));
         jTable1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
@@ -242,8 +241,6 @@ int q, i, id;
             }
         });
 
-        DATE.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -277,7 +274,7 @@ int q, i, id;
                                 .addGap(18, 18, 18)
                                 .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGap(6, 6, 6)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                                         .addComponent(jLabel2)
@@ -311,21 +308,21 @@ int q, i, id;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(DATE, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel8))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel4)
-                            .addComponent(PRODUCT, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel5)
                             .addComponent(PRICE, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(15, 15, 15)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2)
-                            .addComponent(QUANTITY, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(QUANTITY, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel8)
+                            .addComponent(DATE, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4)
+                            .addComponent(PRODUCT, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 120, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
@@ -361,40 +358,31 @@ int q, i, id;
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
         // TODO add your handling code here:
- if (QUANTITY.getText().isEmpty() || PRODUCT.getText().isEmpty() || DATE.getDate() == null || PRICE.getText().isEmpty()) {
+  if (QUANTITY.getText().isEmpty() || PRODUCT.getText().isEmpty() || DATE.getDate() == null || PRICE.getText().isEmpty()) {
         JOptionPane.showMessageDialog(this, "Please fill in all required fields.");
         return;        
- }
-        try
-        {
+    }
+    try {
+Class.forName("org.sqlite.JDBC");
+        sqlConn = DriverManager.getConnection(dataConn, username, password);
+        pst = sqlConn.prepareStatement("INSERT INTO sales (date, product, price, quantity, total) VALUES (?, ?, ?, ?, ?)");
 
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            sqlConn = DriverManager.getConnection(dataConn,username,password);
-            pst = sqlConn.prepareStatement("insert into sales(date,product,price,quantity,"
-                + "total)value"
-                + "(?,?,?,?,?)");
+        String birthdate = sdf.format(DATE.getDate());
+        pst.setString(1, birthdate);
+        pst.setString(2, PRODUCT.getText());
+        pst.setDouble(3, Double.parseDouble(PRICE.getText()));
+        pst.setInt(4, Integer.parseInt(QUANTITY.getText()));
+        double price = Double.parseDouble(PRICE.getText());
+        int quantity = Integer.parseInt(QUANTITY.getText());
+        double total = price * quantity;
+        pst.setDouble(5, total);
 
-pst.setString(4, QUANTITY.getText());
-pst.setString(2, PRODUCT.getText());
-String birthdate = sdf.format(DATE.getDate());
-pst.setString(1, birthdate);
-pst.setString(3, PRICE.getText());
-double price = Double.parseDouble(PRICE.getText());
-int quantity = Integer.parseInt(QUANTITY.getText());
-double total = price * quantity;
-pst.setString(5, Double.toString(total));
-
-            pst.executeUpdate();
-            JOptionPane.showMessageDialog(this,"Sales Record Added");
-            upDateDB();
-        }
-
-        catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Homepage.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            //System.err.println(ex);
-            java.util.logging.Logger.getLogger(Homepage.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
+        pst.executeUpdate();
+        JOptionPane.showMessageDialog(this, "Sales Record Added");
+        upDateDB();
+    } catch (ClassNotFoundException | SQLException ex) {
+        java.util.logging.Logger.getLogger(Homepage.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    }
     }                                        
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {                                         
@@ -456,15 +444,14 @@ for (int i = 0; i < jTable1.getRowCount(); i++) {
     int selectedRow = jTable1.getSelectedRow();
     
     if (selectedRow != -1) { // If a row is selected
-        int id = Integer.parseInt((String) model.getValueAt(selectedRow, 0)); // Get the ID of the selected row
+        String id = (String) model.getValueAt(selectedRow, 0); // Get the ID of the selected row as a string
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+Class.forName("org.sqlite.JDBC");
             sqlConn = DriverManager.getConnection(dataConn,username,password);
-            pst = sqlConn.prepareStatement("DELETE FROM sales WHERE idsales = ?");
-            pst.setInt(1, id); // Set the ID parameter of the prepared statement
-            pst.executeUpdate(); //continued from previous message:
-
-            model.removeRow(selectedRow); // Remove the selected row from the TableModel
+            pst = sqlConn.prepareStatement("DELETE FROM sales WHERE id = ?");
+            pst.setString(1, id); // Set the ID parameter of the prepared statement as a string
+            pst.executeUpdate();
+            model.removeRow(selectedRow);
             JOptionPane.showMessageDialog(null, "Row cleared successfully.", "Message", JOptionPane.INFORMATION_MESSAGE);
         } catch (ClassNotFoundException | SQLException ex) {
             JOptionPane.showMessageDialog(null, "Error clearing row: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
