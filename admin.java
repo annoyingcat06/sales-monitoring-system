@@ -22,8 +22,8 @@ import javax.swing.table.DefaultTableModel;
  */
 public class admin extends javax.swing.JFrame {
 private static final String username = "root";
-private static final String password = "12345";
-private static final String dataConn = "jdbc:mysql://localhost:3306/salesmonitoringsystem?zeroDateTimeBehavior=CONVERT_TO_NULL";
+private static final String password = "Jayjay@06";
+private static final String dataConn = "jdbc:sqlite:resources/monitoringsystem.sql";
  private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
      private ScheduledExecutorService executor;
     private SwingWorker<Void, Vector> worker;
@@ -51,45 +51,35 @@ int q, i, id;
     
                        //============================================================================Function=============
     
-   public void upDateDB()
-    {
-        //int q, i;
-         try
-        {
-           
+public void upDateDB() {
+    try {
            Class.forName("com.mysql.cj.jdbc.Driver"); 
-            sqlConn = DriverManager.getConnection(dataConn,username,password);
-            pst = sqlConn.prepareStatement("select * from accounts");
-            
-            rs =pst.executeQuery();
-            ResultSetMetaData StData = rs.getMetaData();
-            
-            q = StData.getColumnCount();
-            
-            DefaultTableModel RecordTable = (DefaultTableModel)jTable1.getModel();
-            RecordTable.setRowCount(0);
-            
-            while(rs.next()){
-                
-                Vector columnData = new Vector();
-                
-                for (i = 1; i <= q; i++)
-                {
-                    columnData.add(rs.getString("IDNumber"));
-                    columnData.add(rs.getString("password"));
-                    columnData.add(rs.getString("user_type"));
+        Connection conn = DriverManager.getConnection(dataConn, username, password);
+        PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM accounts");
+        ResultSet rs = pstmt.executeQuery();
+        ResultSetMetaData rsmd = rs.getMetaData();
 
-                }
-                    RecordTable.addRow(columnData);                
-                
+        int numberOfColumns = rsmd.getColumnCount();
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        model.setRowCount(0);
+
+        while (rs.next()) {
+            Vector row = new Vector();
+            for (int i = 1; i <= numberOfColumns; i++) {
+                row.add(rs.getString(i));
             }
-         
+            model.addRow(row);
         }
-        catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, ex);
-        } 
-        
+
+        rs.close();
+        pstmt.close();
+        conn.close();
+    } catch (ClassNotFoundException ex) {
+        java.util.logging.Logger.getLogger(admin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    } catch (SQLException ex) {
+        java.util.logging.Logger.getLogger(admin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
     }
+}
 
   
 
@@ -138,13 +128,13 @@ int q, i, id;
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
             },
             new String [] {
-                "ID ACCOUNTS", "PASSWORD", "USER TYPE"
+                "ID", "ID ACCOUNTS", "PASSWORD", "USER TYPE"
             }
         ));
         jTable1.addContainerListener(new java.awt.event.ContainerAdapter() {
@@ -316,35 +306,33 @@ int q, i, id;
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
         // TODO add your handling code here:
-     DefaultTableModel RecordTable = (DefaultTableModel) jTable1.getModel();
+    DefaultTableModel RecordTable = (DefaultTableModel) jTable1.getModel();
     int SelectedRows = jTable1.getSelectedRow();
 
     if (SelectedRows != -1) {
         try {
             id = Integer.parseInt(RecordTable.getValueAt(SelectedRows, 0).toString());
 
-            Class.forName("com.mysql.cj.jdbc.Driver");
+           Class.forName("com.mysql.cj.jdbc.Driver"); 
             sqlConn = DriverManager.getConnection(dataConn, username, password);
             pst = sqlConn.prepareStatement("update accounts set IDNumber =?,password=?,user_type=?");
 
             pst.setString(1, jTextField1.getText());
             pst.setString(2, jTextField2.getText());
-            pst.setString(5, (String) jComboBox1.getSelectedItem());
+            pst.setString(3, (String) jComboBox1.getSelectedItem());
 
 
             pst.executeUpdate();
             JOptionPane.showMessageDialog(this, "Student Record updated");
             upDateDB();
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(admin.class.getName()).log(java.util.logging.Level.SEVERE, null,
-                    ex);
+            java.util.logging.Logger.getLogger(admin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (SQLException ex) {
             System.err.println(ex);
         }
     } else {
         JOptionPane.showMessageDialog(this, "Please select a row to update.");
     }
-        
     }                                        
 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {                                            
@@ -361,34 +349,29 @@ int q, i, id;
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {                                         
         // TODO add your handling code here:
-        
-                 
-        try
-        {
+        try {
+           Class.forName("com.mysql.cj.jdbc.Driver"); 
+            sqlConn = DriverManager.getConnection(dataConn, username, password);
+            pst = sqlConn.prepareStatement("INSERT INTO accounts (IDNumber, password, user_type) VALUES (?, ?, ?)");
 
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            sqlConn = DriverManager.getConnection(dataConn,username,password);
-            pst = sqlConn.prepareStatement("insert into accounts(IDNumber,password,user_type)value"
-                + "(?,?,?)");
+    pst.setString(1, jTextField1.getText());
+    pst.setString(2, jTextField2.getText());
+    pst.setString(3, (String) jComboBox1.getSelectedItem());
 
-            pst.setString(1, jTextField1.getText());
-            pst.setString(2, jTextField2.getText());
-
-            pst.setString(3, (String)jComboBox1.getSelectedItem());
-
-
-            pst.executeUpdate();
-            JOptionPane.showMessageDialog(this,"Account Added");
-            upDateDB();
-        }
-
-        catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(admin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            //System.err.println(ex);
-            java.util.logging.Logger.getLogger(admin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-
+    int rowsAffected = pst.executeUpdate();
+    if (rowsAffected > 0) {
+        JOptionPane.showMessageDialog(this, "Account Added");
+        upDateDB();
+    } else {
+        JOptionPane.showMessageDialog(this, "Account not Added");
+    }
+    pst.close();
+    sqlConn.close();
+} catch (ClassNotFoundException ex) {
+    java.util.logging.Logger.getLogger(admin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+} catch (SQLException ex) {
+    java.util.logging.Logger.getLogger(admin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+}
     }                                        
 
     private void jTable1ComponentAdded(java.awt.event.ContainerEvent evt) {                                       
@@ -401,9 +384,9 @@ int q, i, id;
         DefaultTableModel RecordTable = (DefaultTableModel)jTable1.getModel();
         int SelectedRows = jTable1.getSelectedRow();
 
-        jTextField1.setText(RecordTable.getValueAt(SelectedRows, 0).toString());
-        jTextField2.setText(RecordTable.getValueAt(SelectedRows, 1).toString());
-        jComboBox1.setSelectedItem(RecordTable.getValueAt(SelectedRows, 2).toString());
+        jTextField1.setText(RecordTable.getValueAt(SelectedRows, 1).toString());
+        jTextField2.setText(RecordTable.getValueAt(SelectedRows, 2).toString());
+        jComboBox1.setSelectedItem(RecordTable.getValueAt(SelectedRows, 3).toString());
 
     }                                    
 
@@ -421,42 +404,37 @@ int q, i, id;
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {                                         
         // TODO add your handling code here:
-        DefaultTableModel RecordTable = (DefaultTableModel) jTable1.getModel();
-        int selectedRow = jTable1.getSelectedRow();
+    DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+    int selectedRow = jTable1.getSelectedRow();
 
-        if (selectedRow != -1) {
-            try {
-                id = Integer.parseInt(RecordTable.getValueAt(selectedRow, 0).toString());
+    if (selectedRow != -1) {
+        try {
+            int id = Integer.parseInt(model.getValueAt(selectedRow, 1).toString());
 
-                int deleteItem = JOptionPane.showConfirmDialog(null, "Confirm if you want to delete item", "Warning",
-                    JOptionPane.YES_NO_OPTION);
-                if (deleteItem == JOptionPane.YES_OPTION) {
-                    Class.forName("com.mysql.cj.jdbc.Driver");
-                    sqlConn = DriverManager.getConnection(dataConn, username, password);
-                    pst = sqlConn.prepareStatement("delete from accounts where id =?");
+            int deleteItem = JOptionPane.showConfirmDialog(null, "Confirm if you want to delete item", "Warning", JOptionPane.YES_NO_OPTION);
+            if (deleteItem == JOptionPane.YES_OPTION) {
+Class.forName("org.sqlite.JDBC");
+                Connection conn = DriverManager.getConnection(dataConn, username, password);
+                PreparedStatement pstmt = conn.prepareStatement("DELETE FROM accounts WHERE IDNumber = ?");
+                pstmt.setInt(1, id);
+                pstmt.executeUpdate();
+                JOptionPane.showMessageDialog(this, "Account deleted");
+                upDateDB();
+                pstmt.close();
+                conn.close();
 
-                    pst.setInt(1, id);
-                    pst.executeUpdate();
-                    JOptionPane.showMessageDialog(this, "Account deleted");
-                    upDateDB();
-
-                    jTextField1.setText("");
-                    jTextField2.setText("");
-                    jComboBox1.setSelectedIndex(0);
-
-
-                }
-
-            } catch (ClassNotFoundException ex) {
-                java.util.logging.Logger.getLogger(admin.class.getName()).log(java.util.logging.Level.SEVERE, null,
-                    ex);
-            } catch (SQLException ex) {
-                System.err.println(ex);
-
+                jTextField1.setText("");
+                jTextField2.setText("");
+                jComboBox1.setSelectedIndex(0);
             }
-        } else {
-            JOptionPane.showMessageDialog(null, "Please select a row to delete.");
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(admin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            java.util.logging.Logger.getLogger(admin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+    } else {
+        JOptionPane.showMessageDialog(null, "Please select a row to delete.");
+    }
     }                                        
 
     /**
